@@ -30,14 +30,22 @@ Mit dem Inkrafttreten des **NIS-2-Umsetzungsgesetzes (NIS2UmsuCG)** und den vers
 
 ---
 
-## 🚀 Schnellstart & Installation
+## 🚀 Schnellstart & Installation (Zero-Install One-Liner)
+
+Direkt ohne Repository-Klon auf jedem Linux-System ausführen (erzeugt neben der Terminal-Tabelle automatisch den lokalen Prüfbericht `bsi-pqc-audit-report.html`):
+
+```bash
+curl -sSL https://raw.githubusercontent.com/KenanErorr404/bsi-tr02102-pqc-audit-cli/main/bsi_pqc_check.py | python3 -
+```
+
+Alternativ per Git-Clone für lokale Anpassungen & JSON/HTML-Audit-Exporte:
 
 ```bash
 git clone https://github.com/kenanerorr404/bsi-tr02102-pqc-audit-cli.git
 cd bsi-tr02102-pqc-audit-cli
 chmod +x bsi_pqc_check.py
 
-# Standard-Scan auf dem lokalen Linux-System ausführen:
+# Standard-Scan auf dem lokalen Linux-System ausführen (schreibt bsi-pqc-audit-report.html):
 python3 bsi_pqc_check.py
 
 # Optional: Spezifische Konfigurationspfade & JSON-Export für das Audit-Dossier:

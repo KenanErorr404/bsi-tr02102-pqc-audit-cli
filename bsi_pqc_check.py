@@ -14,9 +14,11 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import html
 import json
 import os
 import re
+import socket
 import subprocess
 import sys
 from pathlib import Path
@@ -403,6 +405,100 @@ def print_summary_table(findings: List[Finding]) -> None:
     print()
 
 
+def generate_html_report(findings: List[Finding], html_path: Path) -> None:
+    now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    hostname = socket.gethostname()
+    crit_count = sum(1 for f in findings if f.status == "CRITICAL")
+    warn_count = sum(1 for f in findings if f.status == "WARNING")
+    pass_count = sum(1 for f in findings if f.status == "PASS")
+
+    rows_html = []
+    for f in findings:
+        badge_bg = "#fee2e2" if f.status == "CRITICAL" else ("#fef3c7" if f.status == "WARNING" else "#dcfce7")
+        badge_fg = "#991b1b" if f.status == "CRITICAL" else ("#92400e" if f.status == "WARNING" else "#166534")
+        rows_html.append(
+            f"<tr>"
+            f"<td><span style='background:{badge_bg};color:{badge_fg};padding:3px 8px;border-radius:4px;font-weight:700;font-size:0.8rem;'>{html.escape(f.status)}</span></td>"
+            f"<td><strong>{html.escape(f.category)}</strong></td>"
+            f"<td><code>{html.escape(f.target)}</code></td>"
+            f"<td>{html.escape(f.algorithm)}</td>"
+            f"<td><small>{html.escape(f.bsi_ref)}</small><br>{html.escape(f.recommendation)}</td>"
+            f"</tr>"
+        )
+
+    report_html = f"""<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BSI TR-02102-1 &amp; NIS-2 Executive Crypto Audit Report ({html.escape(hostname)})</title>
+<style>
+  body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; color: #0f172a; margin: 0; padding: 2rem; line-height: 1.6; }}
+  .container {{ max-width: 980px; margin: 0 auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 2.25rem; box-shadow: 0 4px 12px rgba(15,23,42,0.05); }}
+  h1 {{ margin-top: 0; font-size: 1.65rem; color: #0f172a; }}
+  .summary-bar {{ display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.25rem 0 2rem 0; }}
+  .kpi {{ flex: 1; min-width: 180px; padding: 1rem 1.25rem; border-radius: 8px; border: 1px solid #e2e8f0; background: #f8fafc; }}
+  .kpi strong {{ display: block; font-size: 1.6rem; }}
+  table {{ width: 100%; border-collapse: collapse; margin: 1.25rem 0 2rem 0; font-size: 0.9rem; }}
+  th, td {{ border: 1px solid #e2e8f0; padding: 0.75rem; text-align: left; vertical-align: top; }}
+  th {{ background: #f1f5f9; font-weight: 700; }}
+  .locked-section {{ border: 2px dashed #93c5fd; border-radius: 10px; background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%); padding: 1.75rem; margin-top: 2rem; }}
+  .blur-row td {{ color: #64748b; filter: blur(3.5px); user-select: none; }}
+  .btn {{ display: inline-block; background: #1d4ed8; color: #fff !important; text-decoration: none; font-weight: 700; padding: 0.75rem 1.35rem; border-radius: 6px; margin-right: 0.75rem; margin-top: 0.5rem; }}
+  .btn-dark {{ background: #0f172a; }}
+  .btn-outline {{ background: #ffffff; color: #1d4ed8 !important; border: 1px solid #1d4ed8; }}
+</style>
+</head>
+<body>
+<div class="container">
+  <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;color:#1d4ed8;letter-spacing:0.04em;">Lokaler System-Prüfbericht &bull; BSI TR-02102-1 (Frist 2031) &amp; § 30 BSIG (NIS-2)</div>
+  <h1>BSI TR-02102-1 &amp; NIS-2 Local Crypto-Config Audit Report</h1>
+  <p style="color:#475569;margin-top:0.25rem;">Host: <code>{html.escape(hostname)}</code> &bull; Prüfzeitpunkt: <code>{html.escape(now_str)}</code> &bull; Scanner: <code>bsi_pqc_check.py v1.2.0</code></p>
+
+  <div class="summary-bar">
+    <div class="kpi" style="border-color:#fecaca;background:#fef2f2;"><strong style="color:#dc2626;">{crit_count} CRITICAL</strong>Legacy RSA &lt; 3072 / SHA-1</div>
+    <div class="kpi" style="border-color:#fde68a;background:#fffbeb;"><strong style="color:#d97706;">{warn_count} WARNING</strong>Klassische ECC / Kein PQC-Hybrid</div>
+    <div class="kpi" style="border-color:#bbf7d0;background:#f0fdf4;"><strong style="color:#16a34a;">{pass_count} PASS</strong>BSI TR-02102 Konform</div>
+  </div>
+
+  <h2>1. Technische Befunde (SSH, OpenSSL/TLS &amp; X.509 Zertifikate)</h2>
+  <table>
+    <thead>
+      <tr><th>Status</th><th>Kategorie</th><th>Ziel / Datei</th><th>Algorithmus / Befund</th><th>BSI-Referenz &amp; Empfehlung</th></tr>
+    </thead>
+    <tbody>
+      {"".join(rows_html)}
+    </tbody>
+  </table>
+
+  <div class="locked-section">
+    <h2 style="margin-top:0;color:#1e3a8a;">🔒 Executive NIS-2 &amp; BSI TR-02102-1 Maßnahmenplan (32 Prüfpunkte &amp; CBOM-Vorlage)</h2>
+    <p style="margin-top:0.25rem;color:#334155;">Vorschau auf das prüfungsfertige Audit-Dossier für Geschäftsleitung (§ 38 BSIG Haftungsentlastung), ISMS / ISO 27001, DiGA (TR-03161) und externe NIS-2-Prüfer:</p>
+    <table>
+      <thead>
+        <tr><th>Prüf-ID</th><th>Regulatorische Anforderung (§ 30 BSIG / BSI TR)</th><th>Geforderter Nachweis im Audit</th><th>Status / Vorlage</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>CBOM-01</strong></td><td>BSI TR-02102-1 Kap. 2 &amp; § 30 Abs. 2 Nr. 8 BSIG</td><td>Vollständiges Krypto-Inventar (TLS, SSH, IPsec/IKEv2, Zertifikate, Datenbanken)</td><td>Im €49 Migrations-Pack enthalten</td></tr>
+        <tr><td><strong>PQC-04</strong></td><td>BSI TR-02102-2 / OpenSSL 3.5 Hybrid-KEM</td><td>Migrationsfahrplan auf <code>X25519MLKEM768</code> &amp; <code>SecP256r1MLKEM768</code> bis 2031</td><td>Im €49 Migrations-Pack enthalten</td></tr>
+        <tr class="blur-row"><td><strong>NIS2-12</strong></td><td>§ 38 BSIG Geschäftsführer-Haftungsfreizeichnung</td><td>Vorstands-/GF-Beschlussvorlage zur Krypto-Risikoübernahme &amp; Budgetfreigabe</td><td>Gesperrt (Vollversion)</td></tr>
+        <tr class="blur-row"><td><strong>SDLC-19</strong></td><td>BSI TR-03185-2 Sichere Software-Updates (DiGA/SaaS)</td><td>Update-Klassifizierungsmatrix für Krypto-Patches ohne Rezertifizierungsverlust</td><td>Gesperrt (Vollversion)</td></tr>
+        <tr class="blur-row"><td><strong>VPN-27</strong></td><td>BSI TR-02102-3 IPsec/IKEv2 Post-Quanten-Härtung</td><td>RFC 9370 Multiple Key Exchanges &amp; IKE Fragmentation Konfigurations-SOP</td><td>Gesperrt (Vollversion)</td></tr>
+      </tbody>
+    </table>
+    <div>
+      <a class="btn" href="https://kenanghalioun.gumroad.com/l/wcqysh" target="_blank" rel="noopener">🔐 Vollständiges BSI TR-02102 PQC-Migrations-Pack freischalten (€49) &rarr;</a>
+      <a class="btn btn-dark" href="https://kenanghalioun.gumroad.com/l/juznqz" target="_blank" rel="noopener">📦 BSI TR-03185 Audit-Readiness-Pack (Updates ohne Rezertifizierung, €49) &rarr;</a>
+      <a class="btn btn-outline" href="https://kenanerorr404.github.io/de-compliance-kompass/pqc-nis2-rechner.html" target="_blank" rel="noopener">⚡ Kostenloser Web-Risikotest &amp; CSV-Leseprobe</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>
+"""
+    html_path.write_text(report_html, encoding="utf-8")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="BSI TR-02102-1 & NIS-2 Local Crypto-Config Scanner (SSH, OpenSSL/TLS, X.509)"
@@ -437,6 +533,12 @@ def main() -> int:
         default="",
         help="Optionaler Pfad für JSON-Audit-Export (CBOM-Vorstufe)",
     )
+    parser.add_argument(
+        "--html-out",
+        type=str,
+        default="bsi-pqc-audit-report.html",
+        help="Pfad für den automatisch generierten Executive HTML-Prüfbericht (Standard: bsi-pqc-audit-report.html)",
+    )
     args = parser.parse_args()
 
     findings: List[Finding] = []
@@ -450,6 +552,14 @@ def main() -> int:
             json.dumps([f.to_dict() for f in findings], indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
+
+    if args.html_out:
+        try:
+            report_path = Path(args.html_out)
+            generate_html_report(findings, report_path)
+            print(f"[+] Executive HTML-Audit-Bericht gespeichert unter: {report_path.resolve()}")
+        except Exception as exc:
+            print(f"[!] Hinweis: HTML-Bericht konnte nicht geschrieben werden ({exc})")
 
     print_summary_table(findings)
     return 0
