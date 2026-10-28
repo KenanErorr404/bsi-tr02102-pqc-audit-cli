@@ -51,6 +51,45 @@ python3 bsi_pqc_check.py \
 
 ---
 
+## 🤖 Integration als GitHub Action in CI/CD-Pipelines (`.github/workflows/bsi-pqc-audit.yml`)
+
+Für automatisierte DevSecOps-Prüfungen nach **BSI TR-02102-1**, **BSI TR-03185 (Secure SDLC)** und **NIS-2 (§ 30 BSIG)** kann dieses Repository direkt als Composite GitHub Action eingebunden werden. Die Action schreibt eine vollständige Prüftabelle samt CBOM-Empfehlungen direkt in die **GitHub Actions Job Summary (`$GITHUB_STEP_SUMMARY`)**:
+
+```yaml
+name: BSI TR-02102-1 & NIS-2 PQC Crypto Audit
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1" # Wöchentlicher NIS-2 / CBOM Compliance-Check
+
+jobs:
+  bsi-pqc-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run BSI TR-02102-1 & NIS-2 PQC Scanner
+        uses: KenanErorr404/bsi-tr02102-pqc-audit-cli@v1.1.0
+        with:
+          ssh-config: "/etc/ssh/sshd_config"
+          openssl-config: "/etc/ssl/openssl.cnf"
+          cert-path: "/etc/ssl/certs"
+          max-certs: "8"
+          json-out: "cbom_findings.json"
+
+      - name: Upload CBOM Audit Artifact (NIS-2 § 30 BSIG Nachweis)
+        uses: actions/upload-artifact@v4
+        with:
+          name: bsi-tr02102-cbom-findings
+          path: cbom_findings.json
+```
+
+---
+
 ## 📋 Integrierte BSI TR-02102-1 Checkliste (Referenzmatrix)
 
 | Einsatzbereich | Klassischer Standard (Auslauf / Risiko) | BSI TR-02102 Empfehlung (Übergang & Zielbild 2031+) | Regulatorische Referenz |

@@ -1,0 +1,57 @@
+name: "BSI TR-02102-1 & NIS-2 PQC Crypto Audit Action"
+description: "Zero-dependency scanner for SSH, OpenSSL/TLS & X.509 configs against the BSI TR-02102-1 (2031 PQC deadline) and NIS-2 (§ 30 BSIG) CBOM requirements."
+author: "KenanErorr404"
+branding:
+  icon: "shield"
+  color: "blue"
+
+inputs:
+  ssh-config:
+    description: "Path to sshd_config file to audit"
+    required: false
+    default: "/etc/ssh/sshd_config"
+  openssl-config:
+    description: "Path to openssl.cnf file to audit"
+    required: false
+    default: "/etc/ssl/openssl.cnf"
+  cert-path:
+    description: "Path to X.509 certificate file or directory"
+    required: false
+    default: "/etc/ssl/certs"
+  max-certs:
+    description: "Maximum number of X.509 certificates to inspect"
+    required: false
+    default: "6"
+  json-out:
+    description: "Optional file path for JSON CBOM audit output"
+    required: false
+    default: "cbom_findings.json"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run BSI TR-02102-1 & NIS-2 Crypto-Config Scanner
+      shell: bash
+      run: |
+        set -euo pipefail
+        python3 "${{ github.action_path }}/bsi_pqc_check.py" \
+          --ssh-config "${{ inputs.ssh-config }}" \
+          --openssl-config "${{ inputs.openssl-config }}" \
+          --cert-path "${{ inputs.cert-path }}" \
+          --max-certs "${{ inputs.max-certs }}" \
+          --json-out "${{ inputs.json-out }}" | tee bsi_pqc_scan_output.txt
+
+        if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+          {
+            echo "## 🛡️ BSI TR-02102-1 (2031) & NIS-2 (§ 30 BSIG) Crypto-Audit Summary"
+            echo ""
+            echo '```text'
+            cat bsi_pqc_scan_output.txt
+            echo '```'
+            echo ""
+            echo "### ⚡ Nächste Schritte für Ihr NIS-2 & BSI Audit-Dossier"
+            echo "- **Kostenloser Web-Risikotest (60 Sek.):** [BSI TR-02102 & NIS-2 Krypto-Risiko-Schnelltest im Browser starten](https://kenanerorr404.github.io/de-compliance-kompass/pqc-nis2-rechner.html)"
+            echo "- **Vollständiges CBOM & PQC-Migrations-Paket (€49):** [BSI TR-02102 PQC-Migrations-Pack herunterladen](https://kenanghalioun.gumroad.com/l/wcqysh)"
+            echo "- **Sichere Software-Updates ohne Re-Zertifizierung (€49):** [BSI TR-03185 Audit-Readiness-Pack herunterladen](https://kenanghalioun.gumroad.com/l/juznqz)"
+          } >> "$GITHUB_STEP_SUMMARY"
+        fi
