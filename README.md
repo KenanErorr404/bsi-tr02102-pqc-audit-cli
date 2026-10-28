@@ -30,7 +30,20 @@ Mit dem Inkrafttreten des **NIS-2-Umsetzungsgesetzes (NIS2UmsuCG)** und den vers
 
 ---
 
-## 🚀 Schnellstart & Installation (Zero-Install One-Liner)
+## 🚀 Schnellstart & Installation (pipx, pip oder Zero-Install One-Liner)
+
+### Option A: Sofort-Ausführung oder Installation via `pipx` / `pip` (v1.3.0+)
+
+```bash
+# Direkt in isolierter Umgebung ausführen (ohne permanente Installation):
+pipx run git+https://github.com/KenanErorr404/bsi-tr02102-pqc-audit-cli.git
+
+# Oder als CLI-Befehl `bsi-pqc-check` installieren:
+pip install git+https://github.com/KenanErorr404/bsi-tr02102-pqc-audit-cli.git
+bsi-pqc-check --json-out cbom_findings.json
+```
+
+### Option B: Zero-Install `curl` One-Liner
 
 Direkt ohne Repository-Klon auf jedem Linux-System ausführen (erzeugt neben der Terminal-Tabelle automatisch den lokalen Prüfbericht `bsi-pqc-audit-report.html`):
 
@@ -38,7 +51,7 @@ Direkt ohne Repository-Klon auf jedem Linux-System ausführen (erzeugt neben der
 curl -sSL https://raw.githubusercontent.com/KenanErorr404/bsi-tr02102-pqc-audit-cli/main/bsi_pqc_check.py | python3 -
 ```
 
-Alternativ per Git-Clone für lokale Anpassungen & JSON/HTML-Audit-Exporte:
+### Option C: Git-Clone für lokale Anpassungen & JSON/HTML-Audit-Exporte
 
 ```bash
 git clone https://github.com/kenanerorr404/bsi-tr02102-pqc-audit-cli.git
