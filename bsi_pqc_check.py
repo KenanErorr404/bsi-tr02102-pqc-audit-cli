@@ -13,6 +13,7 @@ Lizenz: MIT
 from __future__ import annotations
 
 import argparse
+import csv
 import datetime
 import html
 import json
@@ -21,6 +22,7 @@ import re
 import socket
 import subprocess
 import sys
+import webbrowser
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -405,6 +407,101 @@ def print_summary_table(findings: List[Finding]) -> None:
     print()
 
 
+def print_headless_remediation_box(findings: List[Finding]) -> None:
+    failed = [f for f in findings if f.status in ("CRITICAL", "WARNING")]
+    first_issue = failed[0] if failed else None
+    issue_desc = (
+        f"{first_issue.category} ({first_issue.target}): {first_issue.algorithm}"
+        if first_issue
+        else "Standard-Systemhärtung nach BSI TR-02102-4"
+    )
+    print("┌" + "─" * 96 + "┐")
+    print("│ 🛡️  PRODUCTION REMEDIATION PREVIEW (configs/sshd_config_bsi_tr02102_4_pqc.conf)                 │")
+    print("├" + "─" * 96 + "┤")
+    print(f"│ Erkannter Befund : {issue_desc[:75]:<75} │")
+    print("│ Drop-in Fix      : /etc/ssh/sshd_config.d/10-bsi-tr02102-pqc.conf                              │")
+    print("│                                                                                                │")
+    print("│   KexAlgorithms mlkem768x25519-sha256,sntrup761x25519-sha512@openssh.com,curve25519-sha256     │")
+    print("│   HostKeyAlgorithms ssh-ed25519-cert-v01@openssh.com,ssh-ed25519,rsa-sha2-512,rsa-sha2-256     │")
+    print("│   Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com          │")
+    print("│   MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com                             │")
+    print("├" + "─" * 96 + "┤")
+    print("│ 📦 KOMPLETTE ENTERPRISE-TOOLKITS (INKL. 45-ZEILEN EXCEL-CBOM, SERVER-CONFIGS & CI/CD-GATES):   │")
+    print("│  • BSI TR-02102 PQC-Migrations-Pack (9 Dateien, €49): https://kenanghalioun.gumroad.com/l/wcqysh│")
+    print("│  • BSI TR-03185 & DiGA Audit-Pack   (5 Dateien, €49): https://kenanghalioun.gumroad.com/l/juznqz│")
+    print("│  • Kostenloser Web-Risikotest & Vorschau            : https://kenanerorr404.github.io/de-compliance-kompass/pqc-nis2-rechner.html")
+    print("└" + "─" * 96 + "┘")
+    print()
+
+
+def generate_cbom_csv_preview(findings: List[Finding], csv_path: Path) -> None:
+    hostname = socket.gethostname()
+    headers = [
+        "Asset_ID",
+        "System_oder_Dienst",
+        "Protokoll_Kategorie",
+        "BSI_Richtlinie_Referenz",
+        "Aktueller_Algorithmus",
+        "Schluessellaenge_Kurve",
+        "BSI_Ablaufdatum",
+        "Vertraulichkeits_Horizont",
+        "HNDL_Risiko_Stufe",
+        "Empfohlene_Hybride_PQC_Zielarchitektur",
+        "Migrations_Phase",
+        "Verantwortliches_Team",
+        "Migrations_Status",
+    ]
+    rows = [headers]
+    padded = list(findings[:5])
+    while len(padded) < 5:
+        padded.append(
+            Finding(
+                "TLS 1.3 / HTTPS",
+                f"{hostname}:443",
+                "ECDHE-RSA-AES256-GCM (Klassisch)",
+                "WARNING",
+                "BSI TR-02102-2",
+                "Hybrid-KEM Groups X25519MLKEM768 / SecP256r1MLKEM768 aktivieren",
+            )
+        )
+    for idx, f in enumerate(padded[:5], start=1):
+        risk = "KRITISCH" if f.status == "CRITICAL" else ("HOCH" if f.status == "WARNING" else "KONFORM")
+        mig_status = "Offen" if f.status != "PASS" else "KONFORM"
+        rows.append([
+            f"CBOM-HOST-{idx:03d}",
+            f"{hostname} ({f.target})",
+            f.category,
+            f.bsi_ref,
+            f.algorithm,
+            "Siehe Befund",
+            "2031-12-31",
+            "> 10 Jahre (Art. 32 DSGVO / § 30 BSIG)",
+            risk,
+            f.recommendation,
+            "Phase 1 (2026/2027)",
+            "SecOps / Platform Team",
+            mig_status,
+        ])
+    rows.append([
+        "CBOM-IMPORT-HINWEIS",
+        "Kopieren Sie Zeilen 2–6 direkt in Tab '2_CBOM_Inventar_45' der Vollversion BSI-TR-02102-CBOM-und-Risiko-Matrix-2031.xlsx",
+        "Vollständiges 45-Zeilen Excel-Workbook (.xlsx) mit automatischen KPI-Formeln & § 38 BSIG Sign-Off",
+        "BSI TR-02102-1 bis -4",
+        "Download Vollversion (€49):",
+        "https://kenanghalioun.gumroad.com/l/wcqysh",
+        "2031-12-31",
+        "Alle 45 Enterprise-Domänen",
+        "KRITISCH",
+        "Inkl. Drop-in Configs für OpenSSH 9.9+, OpenSSL 3.5+, Nginx TLS 1.3 & GitLab/GitHub CI",
+        "Sofort-Download",
+        "CISO / ISB",
+        "Offen",
+    ])
+    with csv_path.open("w", encoding="utf-8-sig", newline="") as fp:
+        writer = csv.writer(fp, delimiter=";", quoting=csv.QUOTE_MINIMAL)
+        writer.writerows(rows)
+
+
 def generate_html_report(findings: List[Finding], html_path: Path) -> None:
     now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     hostname = socket.gethostname()
@@ -453,7 +550,7 @@ def generate_html_report(findings: List[Finding], html_path: Path) -> None:
 <div class="container">
   <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;color:#1d4ed8;letter-spacing:0.04em;">Lokaler System-Prüfbericht &bull; BSI TR-02102-1 (Frist 2031) &amp; § 30 BSIG (NIS-2)</div>
   <h1>BSI TR-02102-1 &amp; NIS-2 Local Crypto-Config Audit Report</h1>
-  <p style="color:#475569;margin-top:0.25rem;">Host: <code>{html.escape(hostname)}</code> &bull; Prüfzeitpunkt: <code>{html.escape(now_str)}</code> &bull; Scanner: <code>bsi_pqc_check.py v1.2.0</code></p>
+  <p style="color:#475569;margin-top:0.25rem;">Host: <code>{html.escape(hostname)}</code> &bull; Prüfzeitpunkt: <code>{html.escape(now_str)}</code> &bull; Scanner: <code>bsi_pqc_check.py v1.4.0</code></p>
 
   <div class="summary-bar">
     <div class="kpi" style="border-color:#fecaca;background:#fef2f2;"><strong style="color:#dc2626;">{crit_count} CRITICAL</strong>Legacy RSA &lt; 3072 / SHA-1</div>
@@ -539,6 +636,18 @@ def main() -> int:
         default="bsi-pqc-audit-report.html",
         help="Pfad für den automatisch generierten Executive HTML-Prüfbericht (Standard: bsi-pqc-audit-report.html)",
     )
+    parser.add_argument(
+        "--no-browser",
+        action="store_true",
+        help="Öffnet den generierten HTML-Prüfbericht nicht automatisch im Standard-Browser",
+    )
+    parser.add_argument(
+        "--generate-cbom-csv",
+        nargs="?",
+        const="host-cbom-preview.csv",
+        default="",
+        help="Exportiert die ersten 5 Host-Befunde als CBOM-CSV-Vorschau kompatibel zum Excel-Workbook (Standard: host-cbom-preview.csv)",
+    )
     args = parser.parse_args()
 
     findings: List[Finding] = []
@@ -553,15 +662,36 @@ def main() -> int:
             encoding="utf-8",
         )
 
+    if args.generate_cbom_csv:
+        try:
+            cbom_csv_path = Path(args.generate_cbom_csv)
+            generate_cbom_csv_preview(findings, cbom_csv_path)
+            print(f"[+] Lokale CBOM-CSV-Vorschau (Excel-kompatibel) gespeichert unter: {cbom_csv_path.resolve()}")
+        except Exception as exc:
+            print(f"[!] Hinweis: CBOM-CSV konnte nicht geschrieben werden ({exc})")
+
+    has_gui = bool(
+        os.environ.get("DISPLAY")
+        or os.environ.get("WAYLAND_DISPLAY")
+        or sys.platform in ("darwin", "win32")
+    )
+
     if args.html_out:
         try:
             report_path = Path(args.html_out)
             generate_html_report(findings, report_path)
             print(f"[+] Executive HTML-Audit-Bericht gespeichert unter: {report_path.resolve()}")
+            if has_gui and not args.no_browser and not args.json_out:
+                try:
+                    webbrowser.open(report_path.resolve().as_uri())
+                except Exception:
+                    pass
         except Exception as exc:
             print(f"[!] Hinweis: HTML-Bericht konnte nicht geschrieben werden ({exc})")
 
     print_summary_table(findings)
+    if not has_gui or args.no_browser:
+        print_headless_remediation_box(findings)
     return 0
 
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bsi-tr02102-pqc-audit-cli"
-version = "1.3.0"
+version = "1.4.0"
 description = "BSI TR-02102-1 (2031 PQC Deadline) & NIS-2 (§ 30 BSIG) Local Crypto-Config & CBOM Scanner (SSH, OpenSSL/TLS, X.509)"
 readme = "README.md"
 license = { text = "MIT" }
