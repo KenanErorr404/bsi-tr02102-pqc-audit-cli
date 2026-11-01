@@ -72,6 +72,23 @@ python3 bsi_pqc_check.py \
 
 ---
 
+## ⚖️ Vergleich: Open-Source Community CLI vs. Enterprise Compliance-Pakete
+
+| Feature &amp; Nachweisdokument | Community CLI Scanner (`bsi_pqc_check.py`) | [BSI TR-02102 Enterprise Toolkit](https://kenanghalioun.gumroad.com/l/wcqysh) | [BSI TR-03185 &amp; DiGA Toolkit](https://kenanghalioun.gumroad.com/l/juznqz) |
+| :--- | :---: | :---: | :---: |
+| **Preis &amp; Lizenz** | **Kostenlos (€0)** &bull; Open-Source (MIT) | **€49** (B2B-Rechnung via Gumroad MoR) | **€49** (B2B-Rechnung via Gumroad MoR) |
+| **Lokaler Host-Scan (`sshd`, `openssl`, X.509)** | ✅ Ja (Terminal + HTML-Report) | ✅ Inklusive (Erweiterte Remediations) | — |
+| **Automatische CBOM-Generierung** | ✅ Host-Preview (`--generate-cbom-csv`) | ✅ Vollständige 45-Zeilen CBOM-Matrix (`.xlsx`) | — |
+| **BSI TR-02102 &amp; NIS-2 Risiko-Matrix** | — | ✅ 3-Tab Excel-Workbook mit KPI-Formeln | — |
+| **Drop-in Hardening-Configs (OpenSSH 9.9+, OpenSSL 3.5+, Nginx TLS 1.3)** | Preview im Terminal | ✅ Sofort einsetzbare Produktionskonfigurationen | — |
+| **BSI TR-03185 Secure SDLC &amp; Patch-Matrix** | — | — | ✅ 3-Klassen Update-Matrix (`.xlsx`) |
+| **DiGA TR-03161 / BfArM Audit-Checklisten** | — | — | ✅ Vollständige SOP &amp; Freigabeprotokolle |
+| **Management Sign-Off (§ 38 BSIG / C-Level Haftung)** | — | ✅ Formular &amp; Revisionsprotokoll | ✅ Herstellererklärung nach BSI TR-03185-2 |
+| **Rechnung &amp; Steuerausweis** | — | ✅ Automatischer EU-USt.-Beleg (MoR) | ✅ Automatischer EU-USt.-Beleg (MoR) |
+| **Download &amp; Leseprobe** | `pip install` / `git clone` | [📥 Sofort-Download (€49)](https://kenanghalioun.gumroad.com/l/wcqysh)<br>[📄 Gratis CSV-Leseprobe](https://github.com/KenanErorr404/bsi-tr02102-pqc-audit-cli/releases/download/v1.4.0/BSI-Audit-Matrix-Leseprobe.csv) | [📥 Sofort-Download (€49)](https://kenanghalioun.gumroad.com/l/juznqz) |
+
+---
+
 ## 🤖 Integration als GitHub Action in CI/CD-Pipelines (`.github/workflows/bsi-pqc-audit.yml`)
 
 Für automatisierte DevSecOps-Prüfungen nach **BSI TR-02102-1**, **BSI TR-03185 (Secure SDLC)** und **NIS-2 (§ 30 BSIG)** kann dieses Repository direkt als Composite GitHub Action eingebunden werden. Die Action schreibt eine vollständige Prüftabelle samt CBOM-Empfehlungen direkt in die **GitHub Actions Job Summary (`$GITHUB_STEP_SUMMARY`)**:
