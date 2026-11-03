@@ -85,7 +85,7 @@ python3 bsi_pqc_check.py \
 | **DiGA TR-03161 / BfArM Audit-Checklisten** | — | — | ✅ Vollständige SOP &amp; Freigabeprotokolle |
 | **Management Sign-Off (§ 38 BSIG / C-Level Haftung)** | — | ✅ Formular &amp; Revisionsprotokoll | ✅ Herstellererklärung nach BSI TR-03185-2 |
 | **Rechnung &amp; Steuerausweis** | — | ✅ Automatischer EU-USt.-Beleg (MoR) | ✅ Automatischer EU-USt.-Beleg (MoR) |
-| **Download &amp; Leseprobe** | `pip install` / `git clone` | [📥 Sofort-Download (€49)](https://kenanghalioun.gumroad.com/l/wcqysh)<br>[📄 Gratis CSV-Leseprobe](https://github.com/KenanErorr404/bsi-tr02102-pqc-audit-cli/releases/download/v1.4.0/BSI-Audit-Matrix-Leseprobe.csv) | [📥 Sofort-Download (€49)](https://kenanghalioun.gumroad.com/l/juznqz) |
+| **Download &amp; Leseprobe** | `pip install` / `git clone` | [📥 Sofort-Download (€49)](https://kenanghalioun.gumroad.com/l/wcqysh)<br>[📄 Kostenlose CSV-Audit-Leseprobe herunterladen (€0+)](https://kenanghalioun.gumroad.com/l/flcsb) | [📥 Sofort-Download (€49)](https://kenanghalioun.gumroad.com/l/juznqz)<br>[📄 Kostenlose CSV-Audit-Leseprobe herunterladen (€0+)](https://kenanghalioun.gumroad.com/l/flcsb) |
 
 ---
 
@@ -144,11 +144,13 @@ jobs:
 
 Für B2B-Teams, Datenschutzbeauftragte, CISOs und Auditoren, die über den technischen CLI-Scan hinaus sofort prüfungsfähige Nachweisdokumente für BSI-, ISO-27001-, DiGA- (BfArM) oder NIS-2-Prüfungen benötigen:
 
-1. **[Kostenloser Web-Rechner: BSI PQC & NIS-2 Risiko- und Bußgeld-Kalkulator](https://kenanerorr404.github.io/de-compliance-kompass/pqc-nis2-rechner.html)**
+1. **[Kostenlose CSV-Audit-Leseprobe herunterladen (€0+ Starter Edition)](https://kenanghalioun.gumroad.com/l/flcsb)**
+   * Enthält: `BSI-Audit-Matrix-Leseprobe.csv` (6 repräsentative Prüfpunkte für BSI TR-02102-1 PQC 2031 & BSI TR-03185 Secure SDLC) sowie `README-Upgrade-auf-Enterprise-XLSX.md` inkl. **20 % Upgrade-Rabattcode (`BSI2026PRO`)**.
+2. **[Kostenloser Web-Rechner: BSI PQC & NIS-2 Risiko- und Bußgeld-Kalkulator](https://kenanerorr404.github.io/de-compliance-kompass/pqc-nis2-rechner.html)**
    * Berechnet in 60 Sekunden Ihren PQC-Migrations-Score, das "Store-Now-Decrypt-Later"-Risiko und den NIS-2-Bußgeldrahmen nach § 60 BSIG (100 % lokal im Browser).
-2. **[BSI TR-02102 PQC & Krypto-Inventar (CBOM) Migrations-Pack](https://kenanghalioun.gumroad.com/l/wcqysh)**
+3. **[BSI TR-02102 PQC & Krypto-Inventar (CBOM) Migrations-Pack](https://kenanghalioun.gumroad.com/l/wcqysh)**
    * Enthält: Fertige **CBOM-Excel/CSV-Vorlage**, **NIS-2 Kryptographie-Richtlinie (§ 30 BSIG)**, **Management-Haftungs-Vorlage (§ 38 BSIG)** und den **PQC-Migrationsplan 2026–2031**.
-3. **[BSI TR-03185Vorlage & Audit-Readiness-Pack (Sichere Software-Updates ohne Rezertifizierung)](https://kenanghalioun.gumroad.com/l/juznqz)**
+4. **[BSI TR-03185Vorlage & Audit-Readiness-Pack (Sichere Software-Updates ohne Rezertifizierung)](https://kenanghalioun.gumroad.com/l/juznqz)**
    * Enthält: **Update-Klassifizierungsmatrix (Major/Minor/Security Patch)**, **SBOM/VEX-Freigabe-Checkliste** und **Herstellererklärung nach BSI TR-03185-2** (ideal für DiGA-Hersteller, MedTech & CRA-Compliance).
 
 ---
