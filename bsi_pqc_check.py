@@ -402,7 +402,7 @@ def print_summary_table(findings: List[Finding]) -> None:
     print(
         "Need the full BSI TR-02102 Audit Matrix, CBOM CSV & Management Migration Roadmap? "
         "Run the free web risk test at: https://kenanerorr404.github.io/de-compliance-kompass/pqc-nis2-rechner.html "
-        "or download the complete Audit Pack: https://kenanghalioun.gumroad.com/l/wcqysh"
+        "or download the complete Audit Pack (-20%): https://kenanghalioun.gumroad.com/l/wcqysh/BSI2026PRO?wanted=true"
     )
     print()
 
@@ -426,10 +426,11 @@ def print_headless_remediation_box(findings: List[Finding]) -> None:
     print("│   Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com          │")
     print("│   MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com                             │")
     print("├" + "─" * 96 + "┤")
-    print("│ 📦 KOMPLETTE ENTERPRISE-TOOLKITS (INKL. 45-ZEILEN EXCEL-CBOM, SERVER-CONFIGS & CI/CD-GATES):   │")
-    print("│  • BSI TR-02102 PQC-Migrations-Pack (9 Dateien, €49): https://kenanghalioun.gumroad.com/l/wcqysh│")
-    print("│  • BSI TR-03185 & DiGA Audit-Pack   (5 Dateien, €49): https://kenanghalioun.gumroad.com/l/juznqz│")
-    print("│  • Kostenloser Web-Risikotest & Vorschau            : https://kenanerorr404.github.io/de-compliance-kompass/pqc-nis2-rechner.html")
+    print("│ 📦 KOMPLETTE ENTERPRISE-TOOLKITS (-20% CODE BSI2026PRO • 45-CBOM .XLSX, CONFIGS & CI/CD):      │")
+    print("│  • Gratis CSV-Leseprobe (€0+)     : https://kenanghalioun.gumroad.com/l/flcsb?wanted=true       │")
+    print("│  • TR-02102 PQC-Suite (€39,20)    : https://kenanghalioun.gumroad.com/l/wcqysh/BSI2026PRO?wanted=true")
+    print("│  • TR-03185 & DiGA Suite (€39,20) : https://kenanghalioun.gumroad.com/l/juznqz/BSI2026PRO?wanted=true")
+    print("│  • Kostenloser Web-Risikotest     : https://kenanerorr404.github.io/de-compliance-kompass/pqc-nis2-rechner.html")
     print("└" + "─" * 96 + "┘")
     print()
 
@@ -487,8 +488,8 @@ def generate_cbom_csv_preview(findings: List[Finding], csv_path: Path) -> None:
         "Kopieren Sie Zeilen 2–6 direkt in Tab '2_CBOM_Inventar_45' der Vollversion BSI-TR-02102-CBOM-und-Risiko-Matrix-2031.xlsx",
         "Vollständiges 45-Zeilen Excel-Workbook (.xlsx) mit automatischen KPI-Formeln & § 38 BSIG Sign-Off",
         "BSI TR-02102-1 bis -4",
-        "Download Vollversion (€49):",
-        "https://kenanghalioun.gumroad.com/l/wcqysh",
+        "Download Vollversion (€39,20 mit BSI2026PRO):",
+        "https://kenanghalioun.gumroad.com/l/wcqysh/BSI2026PRO?wanted=true",
         "2031-12-31",
         "Alle 45 Enterprise-Domänen",
         "KRITISCH",
@@ -584,9 +585,10 @@ def generate_html_report(findings: List[Finding], html_path: Path) -> None:
       </tbody>
     </table>
     <div>
-      <a class="btn" href="https://kenanghalioun.gumroad.com/l/wcqysh" target="_blank" rel="noopener">🔐 Vollständiges BSI TR-02102 PQC-Migrations-Pack freischalten (€49) &rarr;</a>
-      <a class="btn btn-dark" href="https://kenanghalioun.gumroad.com/l/juznqz" target="_blank" rel="noopener">📦 BSI TR-03185 Audit-Readiness-Pack (Updates ohne Rezertifizierung, €49) &rarr;</a>
-      <a class="btn btn-outline" href="https://kenanerorr404.github.io/de-compliance-kompass/pqc-nis2-rechner.html" target="_blank" rel="noopener">⚡ Kostenloser Web-Risikotest &amp; CSV-Leseprobe</a>
+      <a class="btn" href="https://kenanghalioun.gumroad.com/l/wcqysh/BSI2026PRO?wanted=true" target="_blank" rel="noopener">🔐 Vollständiges BSI TR-02102 PQC-Migrations-Pack freischalten (39,20 € statt 49 €) &rarr;</a>
+      <a class="btn btn-dark" href="https://kenanghalioun.gumroad.com/l/juznqz/BSI2026PRO?wanted=true" target="_blank" rel="noopener">📦 BSI TR-03185 Audit-Readiness-Pack (Updates ohne Rezertifizierung, 39,20 €) &rarr;</a>
+      <a class="btn btn-outline" href="https://kenanghalioun.gumroad.com/l/flcsb?wanted=true" target="_blank" rel="noopener">📥 Gratis CSV-Audit-Leseprobe (€0+)</a>
+      <a class="btn btn-outline" href="https://kenanerorr404.github.io/de-compliance-kompass/pqc-nis2-rechner.html" target="_blank" rel="noopener">⚡ Kostenloser Web-Risikotest</a>
     </div>
   </div>
 </div>
