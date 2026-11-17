@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 """
-BSI TR-02102-1 & NIS-2 Local Crypto-Config Scanner (v1.0.0)
-===========================================================
-Prüft lokale SSH-Konfigurationen (sshd_config), OpenSSL/TLS-Konfigurationen
-und X.509-Zertifikate auf veraltete asymmetrische Verfahren (RSA < 3072 Bit,
-klassische ECDSA-Kurven) gemäß BSI TR-02102-1 (Frist 2031) und § 30 BSIG (NIS-2).
+BSI TR-02102-1, TR-03183-2 (CRA SBOM) & NIS-2 Local Audit CLI (v1.5.0)
+======================================================================
+Prüft lokale SSH-Konfigurationen (sshd_config), OpenSSL/TLS-Konfigurationen,
+X.509-Zertifikate sowie Software-Projektmanifeste (CRA / BSI TR-03183-2 SBOM &
+TR-03185 Patch-Readiness) gemäß BSI TR-02102-1 (Frist 2031), Cyber Resilience Act
+und § 30 / § 38 BSIG (NIS-2).
 
 Zero-Dependency CLI (100% Python Standard Library).
 Lizenz: MIT
 """
 
 from __future__ import annotations
+
+__version__ = "1.5.0"
 
 import argparse
 import csv
@@ -650,12 +653,85 @@ def main() -> int:
         default="",
         help="Exportiert die ersten 5 Host-Befunde als CBOM-CSV-Vorschau kompatibel zum Excel-Workbook (Standard: host-cbom-preview.csv)",
     )
+    parser.add_argument(
+        "--cra-sbom-check",
+        nargs="?",
+        const=".",
+        default="",
+        help="Prüft Projektmanifeste (package.json, requirements.txt, pyproject.toml, Cargo.toml, go.mod, pom.xml) auf CRA / BSI TR-03183-2 CycloneDX SBOM & TR-03185 Readiness",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Gibt alle Befunde direkt als JSON auf stdout aus (ideal für CI/CD-Pipelines)",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"bsi-pqc-check {__version__}",
+    )
     args = parser.parse_args()
 
     findings: List[Finding] = []
     findings.extend(scan_sshd_config([Path(args.ssh_config)]))
     findings.extend(scan_openssl_config([Path(args.openssl_config)]))
     findings.extend(scan_certificates([Path(args.cert_path)], max_certs=args.max_certs))
+
+    if args.cra_sbom_check:
+        proj_dir = Path(args.cra_sbom_check)
+        manifest_names = [
+            "package.json",
+            "requirements.txt",
+            "pyproject.toml",
+            "Cargo.toml",
+            "go.mod",
+            "pom.xml",
+        ]
+        found_manifests = [
+            proj_dir / m for m in manifest_names if (proj_dir / m).exists()
+        ]
+        sbom_files = (
+            list(proj_dir.glob("*sbom*.json"))
+            + list(proj_dir.glob("*bom*.json"))
+            + list(proj_dir.glob("*.cdx.json"))
+        )
+        if found_manifests and not sbom_files:
+            findings.append(
+                Finding(
+                    category="CRA-SBOM",
+                    target=", ".join(m.name for m in found_manifests),
+                    algorithm="Kein CycloneDX 1.6 SBOM-Artefakt (TR-03183-2)",
+                    status="CRITICAL",
+                    bsi_ref="BSI TR-03183-2 v2.1 / CRA Art. 13",
+                    recommendation="CycloneDX SBOM mit PURL, SHA-256 Hashes & Abhängigkeitsbaum in CI/CD generieren (BSI TR-03185 Release-Gate)",
+                )
+            )
+        elif sbom_files:
+            findings.append(
+                Finding(
+                    category="CRA-SBOM",
+                    target=sbom_files[0].name,
+                    algorithm="CycloneDX/SPDX SBOM erkannt",
+                    status="PASS",
+                    bsi_ref="BSI TR-03183-2 v2.1 / TR-03185",
+                    recommendation="Mit 3-Klassen Patch-Matrix (Klasse A/B/C) für rezertifizierungsfreie Security-Updates verknüpfen",
+                )
+            )
+        else:
+            findings.append(
+                Finding(
+                    category="CRA-SBOM",
+                    target=str(proj_dir.resolve()),
+                    algorithm="Keine Projektmanifeste oder SBOM im Pfad gefunden",
+                    status="WARNING",
+                    bsi_ref="BSI TR-03183-2 / TR-03185",
+                    recommendation="Projektverzeichnis mit package.json/pyproject.toml/go.mod/pom.xml angeben und CycloneDX Release-Gate aktivieren",
+                )
+            )
+
+    if args.json:
+        print(json.dumps([f.to_dict() for f in findings], indent=2, ensure_ascii=False))
+        return 0
 
     if args.json_out:
         out_path = Path(args.json_out)
@@ -692,6 +768,19 @@ def main() -> int:
             print(f"[!] Hinweis: HTML-Bericht konnte nicht geschrieben werden ({exc})")
 
     print_summary_table(findings)
+    if args.cra_sbom_check:
+        print(
+            "\n"
+            + "=" * 88
+            + "\n"
+            + " [CRA & BSI TR-03183-2 / TR-03185 ENTERPRISE REMEDIATION PACK]\n"
+            + " Schlüsselfertige 3-Klassen Patch-Matrix (.xlsx), CycloneDX SBOM Release-Gate Pipeline\n"
+            + " & druckfertiges Klasse-A-Freigabeprotokoll (Updates ohne Re-Zertifizierungsverlust):\n"
+            + " -> Sofort-Download (€39,20 statt €49 mit Code BSI2026PRO):\n"
+            + "    https://kenanghalioun.gumroad.com/l/juznqz/BSI2026PRO?wanted=true\n"
+            + " -> Gratis CSV-Leseprobe (€0+): https://kenanghalioun.gumroad.com/l/flcsb?wanted=true\n"
+            + "=" * 88
+        )
     if not has_gui or args.no_browser:
         print_headless_remediation_box(findings)
     return 0
